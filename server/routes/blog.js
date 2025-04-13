@@ -35,17 +35,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
-
-});
-
-// DELETE a post
-router.delete('/:id', async (req, res) => {
-  try {
-    await Blog.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Post deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-module.exports = router;
