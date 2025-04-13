@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout - Ifoulki</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-white text-gray-800">
+  <main class="max-w-xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Checkout</h1>
+    <form id="checkoutForm" class="space-y-4">
+      <input required name="name" placeholder="Name" class="w-full p-2 border rounded" />
+      <input required name="email" placeholder="Email" class="w-full p-2 border rounded" />
+      <input required name="phone" placeholder="Phone" class="w-full p-2 border rounded" />
+      <input required name="address" placeholder="Address" class="w-full p-2 border rounded" />
+      <select name="paymentMethod" class="w-full p-2 border rounded">
+        <option value="Cash on Delivery">Cash on Delivery</option>
+        <option value="Mock Payment">Mock Payment</option>
+      </select>
+
+      <div class="space-y-2">
+        <input id="couponCode" placeholder="Enter coupon code" class="w-full p-2 border rounded" />
+        <button type="button" onclick="applyCoupon()" class="bg-gray-800 text-white px-4 py-2 rounded">Apply Coupon</button>
+        <p id="couponMessage" class="text-sm text-green-600"></p>
+      </div>
+
+      <p class="font-bold text-xl">Total: <span id="checkoutTotal"></span></p>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Place Order</button>
+    </form>
+  </main>
+
+  <script src="checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog Post - Ifoulki</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-800">
+  <main class="max-w-3xl mx-auto p-6" id="postContainer"></main>
+
+  <script>
+    const id = new URLSearchParams(location.search).get("id");
+
+    async function loadPost() {
+      const res = await fetch(`/api/blog/${id}`);
+      const post = await res.json();
+      const container = document.getElementById('postContainer');
+      container.innerHTML = `
+        <h1 class="text-3xl font-bold mb-2">${post.title}</h1>
+        <p class="text-sm text-gray-600 mb-4">${new Date(post.date).toLocaleDateString()}</p>
+        <img src="${post.image}" class="w-full mb-4 rounded" />
+        <p class="leading-relaxed whitespace-pre-line">${post.content}</p>
+      `;
+    }
+
+    loadPost();
+  </script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Ifoulki</title>
+  <script src="https://cdn.tailwindcss.com">
+async function loadSettings() {
+  const res = await fetch('/api/settings');
+  const settings = await res.json();
+  const form = document.getElementById('storeSettingsForm');
+  if (!settings || !form) return;
+
+  for (let key in settings) {
+    if (typeof settings[key] === 'object') {
+      for (let subKey in settings[key]) {
+        if (form[`${key}.${subKey}`]) {
+          form[`${key}.${subKey}`].value = settings[key][subKey];
+        }
+      }
+    } else {
+      if (form[key]) {
+        form[key].value = settings[key];
+      }
+      if (key === "defaultLang" && form.defaultLang) {
+        form.defaultLang.value = settings.defaultLang;
+      }
+      }
+    }
+  }
+}
+
+document.getElementById('storeSettingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const settings = {
+    storeName: form.storeName.value,
+    logoUrl: form.logoUrl.value,
+    bannerUrl: form.bannerUrl.value,
+    defaultCurrency: form.defaultCurrency.value,
+    defaultLang: form.defaultLang.value,
+    socialLinks: {
+      instagram: form["socialLinks.instagram"].value,
+      facebook: form["socialLinks.facebook"].value,
+      whatsapp: form["socialLinks.whatsapp"].value
+    }
+  };
+
+  const res = await fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings)
+  });
+
+  if (res.ok) {
+    alert('Settings updated successfully!');
+  } else {
+    alert('Failed to update settings.');
+  }
+});
+
+
+async function loadBlogPosts() {
+  const res = await fetch('/api/blog');
+  const posts = await res.json();
+  const container = document.getElementById('blogList');
+  container.innerHTML = '';
+
+  posts.forEach(post => {
+    const div = document.createElement('div');
+    div.className = "bg-white p-4 shadow rounded flex justify-between items-start";
+    div.innerHTML = `
+      <div>
+        <h4 class="font-semibold">${post.title}</h4>
+        <p class="text-sm text-gray-600">${new Date(post.date).toLocaleDateString()}</p>
+      </div>
+      <button onclick="deleteBlogPost('${post._id}')" class="text-red-600">Delete</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+document.getElementById('addBlogForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    title: form.title.value,
+    image: form.image.value,
+    content: form.content.value
+  };
+
+  const res = await fetch('/api/blog', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok) {
+    form.reset();
+    loadBlogPosts();
+  } else {
+    alert("Failed to add blog post.");
+  }
+});
+
+async function deleteBlogPost(id) {
+  if (!confirm("Delete this blog post?")) return;
+  const res = await fetch(`/api/blog/${id}`, { method: 'DELETE' });
+  if (res.ok) loadBlogPosts();
+}
+
+
+async function loadCoupons() {
+  const res = await fetch('/api/coupons');
+  const coupons = await res.json();
+  const list = document.getElementById('couponList');
+  list.innerHTML = '';
+
+  coupons.forEach(c => {
+    const div = document.createElement('div');
+    div.className = "bg-white p-4 shadow rounded flex justify-between items-center";
+    div.innerHTML = `
+      <div>
+        <h4 class="font-semibold">\${c.code} - \${c.type === 'percent' ? c.value + '%' : c.value + ' MAD'}</h4>
+        <p class="text-sm text-gray-600">Expires: \${c.expires ? new Date(c.expires).toLocaleDateString() : 'Never'}</p>
+      </div>
+      <button onclick="deleteCoupon('\${c._id}')" class="text-red-600">Delete</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('addCouponForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    code: form.code.value,
+    type: form.type.value,
+    value: parseFloat(form.value.value),
+    expires: form.expires.value || null
+  };
+
+  const res = await fetch('/api/coupons', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok) {
+    form.reset();
+    loadCoupons();
+  } else {
+    alert("Error adding coupon.");
+  }
+});
+
+async function deleteCoupon(id) {
+  if (!confirm("Delete this coupon?")) return;
+  const res = await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+  if (res.ok) loadCoupons();
+}
+
+</script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <header class="bg-white shadow p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Ifoulki Admin Dashboard</h1>
+    <button onclick="logout()" class="text-red-600 font-semibold">Logout</button>
+  </header>
+
+  <main class="p-4 max-w-6xl mx-auto">
+    <nav class="mb-4 flex gap-4">
+      <button onclick="showTab('products')" class="tab-button">Products</button>
+      <button onclick="showTab('orders')" class="tab-button">Orders</button>
+      <button onclick="showTab('settings')" class="tab-button">Store Settings</button>
+      <button onclick="showTab('blog')" class="tab-button">Blog</button>
+      <button onclick="showTab('coupons')" class="tab-button">Coupons</button>
+    </nav>
+
+    <section id="products" class="admin-tab hidden">
+      <h2 class="text-xl font-bold mb-2">Manage Products</h2>
+      <form id="addProductForm" class="space-y-4 bg-white p-4 rounded shadow mb-6">
+        <h3 class="text-lg font-semibold">Add New Product</h3>
+        <input name="name" placeholder="Product Name" required class="w-full p-2 border rounded" />
+        <input name="price" type="number" placeholder="Price" required class="w-full p-2 border rounded" />
+        <input name="currency" placeholder="Currency (USD, EUR, MAD)" class="w-full p-2 border rounded" />
+        <input name="category" placeholder="Category" class="w-full p-2 border rounded" />
+        <input name="image" placeholder="Image URL" class="w-full p-2 border rounded" />
+        <textarea name="description" placeholder="Description" class="w-full p-2 border rounded"></textarea>
+        <input name="stock" type="number" placeholder="Stock Quantity" class="w-full p-2 border rounded" />
+        <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Add Product</button>
+      </form>
+      <div id="productList" class="space-y-4"></div>
+    </section>
+
+    <section id="orders" class="admin-tab hidden">
+      <h2 class="text-xl font-bold mb-4">Customer Orders</h2>
+      <div id="orderList" class="space-y-4"></div>
+    </section>
+
+    <section id="settings" class="admin-tab hidden">
+  <h2 class="text-xl font-bold mb-4">Store Settings</h2>
+  <form id="storeSettingsForm" class="space-y-4 bg-white p-4 rounded shadow max-w-xl">
+    <input name="storeName" placeholder="Store Name" class="w-full p-2 border rounded" />
+    <input name="logoUrl" placeholder="Logo URL" class="w-full p-2 border rounded" />
+    <input name="bannerUrl" placeholder="Banner URL" class="w-full p-2 border rounded" />
+    <input name="defaultCurrency" placeholder="Default Currency (USD, EUR, MAD)" class="w-full p-2 border rounded" />
+    <select name="defaultLang" class="w-full p-2 border rounded">
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+    </select>
+    <input name="socialLinks.instagram" placeholder="Instagram URL" class="w-full p-2 border rounded" />
+    <input name="socialLinks.facebook" placeholder="Facebook URL" class="w-full p-2 border rounded" />
+    <input name="socialLinks.whatsapp" placeholder="WhatsApp Link" class="w-full p-2 border rounded" />
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Settings</button>
+  </form>
+</section>
+  
+<section id="blog" class="admin-tab hidden">
+  <h2 class="text-xl font-bold mb-4">Manage Blog Posts</h2>
+
+  <form id="addBlogForm" class="space-y-4 bg-white p-4 rounded shadow mb-6 max-w-2xl">
+    <input name="title" placeholder="Title" required class="w-full p-2 border rounded" />
+    <input name="image" placeholder="Image URL" class="w-full p-2 border rounded" />
+    <textarea name="content" placeholder="Content" required rows="6" class="w-full p-2 border rounded"></textarea>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Add Post</button>
+  </form>
+
+  <div id="blogList" class="space-y-4"></div>
+</section>
+
+
+<section id="coupons" class="admin-tab hidden">
+  <h2 class="text-xl font-bold mb-4">Manage Coupons</h2>
+
+  <form id="addCouponForm" class="space-y-4 bg-white p-4 rounded shadow mb-6 max-w-2xl">
+    <input name="code" placeholder="Coupon Code" required class="w-full p-2 border rounded" />
+    <select name="type" class="w-full p-2 border rounded">
+      <option value="fixed">Fixed Amount</option>
+      <option value="percent">Percentage</option>
+    </select>
+    <input name="value" type="number" step="0.01" placeholder="Discount Value" class="w-full p-2 border rounded" required />
+    <input name="expires" type="date" class="w-full p-2 border rounded" />
+    <button class="bg-blue-600 text-white px-4 py-2 rounded">Add Coupon</button>
+  </form>
+
+  <div id="couponList" class="space-y-4"></div>
+</section>
+
+</main>
+
+  <script>
+    const tabs = document.querySelectorAll(".admin-tab");
+    function showTab(id) {
+      tabs.forEach(t => t.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      if (id === "products") loadProducts();
+      if (id === "orders") loadOrders();
+      if (id === "settings") loadSettings();
+      if (id === "blog") loadBlogPosts();
+      if (id === "coupons") loadCoupons();
+    }
+
+    async function loadOrders() {
+      const res = await fetch('/api/orders');
+      const orders = await res.json();
+      const list = document.getElementById('orderList');
+      list.innerHTML = '';
+
+      if (!orders.length) {
+        list.innerHTML = '<p>No orders yet.</p>';
+        return;
+      }
+
+      orders.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-4 rounded shadow';
+
+        const itemsHTML = order.items.map(i =>
+          `<li>${i.quantity} × ${i.name} (${i.price} ${order.currency})</li>`
+        ).join('');
+
+        card.innerHTML = `
+          <div class="mb-2">
+            <strong>${order.customer.name}</strong> – ${order.customer.email}<br/>
+            <small>${order.customer.phone} – ${order.customer.address}</small>
+          </div>
+          <ul class="list-disc ml-5">${itemsHTML}</ul>
+          <p class="mt-2 font-bold">Total: ${order.total} ${order.currency}</p>
+          <p class="text-sm text-gray-500 mt-1">Order ID: ${order._id}</p>
+        `;
+
+        list.appendChild(card);
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("admin_token");
+      window.location.href = "/admin.html";
+    }
+
+    async function loadProducts() {
+      const res = await fetch('/api/products');
+      const products = await res.json();
+      const list = document.getElementById('productList');
+      list.innerHTML = '';
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = "bg-white p-4 shadow rounded flex justify-between items-center";
+        div.innerHTML = \`
+          <div>
+            <h4 class="font-semibold">\${p.name}</h4>
+            <p>\${p.price} \${p.currency} - \${p.category || ''}</p>
+          </div>
+          <button onclick="deleteProduct('\${p._id}')" class="text-red-600">Delete</button>
+        \`;
+        list.appendChild(div);
+      });
+    }
+
+    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.price = parseFloat(data.price);
+      data.stock = parseInt(data.stock) || 0;
+
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        form.reset();
+        loadProducts();
+      } else {
+        alert('Error adding product.');
+      }
+    });
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you sure?')) return;
+      const res = await fetch(\`/api/products/\${id}\`, { method: 'DELETE' });
+      if (res.ok) loadProducts();
+    }
+
+    if (localStorage.getItem("admin_token") !== "loggedin") {
+      window.location.href = "/admin.html";
+    } else {
+      showTab("products");
+      loadProducts();
+    }
+  
+async function loadSettings() {
+  const res = await fetch('/api/settings');
+  const settings = await res.json();
+  const form = document.getElementById('storeSettingsForm');
+  if (!settings || !form) return;
+
+  for (let key in settings) {
+    if (typeof settings[key] === 'object') {
+      for (let subKey in settings[key]) {
+        if (form[`${key}.${subKey}`]) {
+          form[`${key}.${subKey}`].value = settings[key][subKey];
+        }
+      }
+    } else {
+      if (form[key]) {
+        form[key].value = settings[key];
+      }
+      if (key === "defaultLang" && form.defaultLang) {
+        form.defaultLang.value = settings.defaultLang;
+      }
+      }
+    }
+  }
+}
+
+document.getElementById('storeSettingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const settings = {
+    storeName: form.storeName.value,
+    logoUrl: form.logoUrl.value,
+    bannerUrl: form.bannerUrl.value,
+    defaultCurrency: form.defaultCurrency.value,
+    defaultLang: form.defaultLang.value,
+    socialLinks: {
+      instagram: form["socialLinks.instagram"].value,
+      facebook: form["socialLinks.facebook"].value,
+      whatsapp: form["socialLinks.whatsapp"].value
+    }
+  };
+
+  const res = await fetch('/api/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings)
+  });
+
+  if (res.ok) {
+    alert('Settings updated successfully!');
+  } else {
+    alert('Failed to update settings.');
+  }
+});
+
+
+async function loadBlogPosts() {
+  const res = await fetch('/api/blog');
+  const posts = await res.json();
+  const container = document.getElementById('blogList');
+  container.innerHTML = '';
+
+  posts.forEach(post => {
+    const div = document.createElement('div');
+    div.className = "bg-white p-4 shadow rounded flex justify-between items-start";
+    div.innerHTML = `
+      <div>
+        <h4 class="font-semibold">${post.title}</h4>
+        <p class="text-sm text-gray-600">${new Date(post.date).toLocaleDateString()}</p>
+      </div>
+      <button onclick="deleteBlogPost('${post._id}')" class="text-red-600">Delete</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+document.getElementById('addBlogForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    title: form.title.value,
+    image: form.image.value,
+    content: form.content.value
+  };
+
+  const res = await fetch('/api/blog', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok) {
+    form.reset();
+    loadBlogPosts();
+  } else {
+    alert("Failed to add blog post.");
+  }
+});
+
+async function deleteBlogPost(id) {
+  if (!confirm("Delete this blog post?")) return;
+  const res = await fetch(`/api/blog/${id}`, { method: 'DELETE' });
+  if (res.ok) loadBlogPosts();
+}
+
+
+async function loadCoupons() {
+  const res = await fetch('/api/coupons');
+  const coupons = await res.json();
+  const list = document.getElementById('couponList');
+  list.innerHTML = '';
+
+  coupons.forEach(c => {
+    const div = document.createElement('div');
+    div.className = "bg-white p-4 shadow rounded flex justify-between items-center";
+    div.innerHTML = `
+      <div>
+        <h4 class="font-semibold">\${c.code} - \${c.type === 'percent' ? c.value + '%' : c.value + ' MAD'}</h4>
+        <p class="text-sm text-gray-600">Expires: \${c.expires ? new Date(c.expires).toLocaleDateString() : 'Never'}</p>
+      </div>
+      <button onclick="deleteCoupon('\${c._id}')" class="text-red-600">Delete</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('addCouponForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    code: form.code.value,
+    type: form.type.value,
+    value: parseFloat(form.value.value),
+    expires: form.expires.value || null
+  };
+
+  const res = await fetch('/api/coupons', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok) {
+    form.reset();
+    loadCoupons();
+  } else {
+    alert("Error adding coupon.");
+  }
+});
+
+async function deleteCoupon(id) {
+  if (!confirm("Delete this coupon?")) return;
+  const res = await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
+  if (res.ok) loadCoupons();
+}
+
+</script>
+
+  <style>
+    .tab-button {
+      background-color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .tab-button:hover {
+      background-color: #f9fafb;
+    }
+  </style>
+</body>
+</html>

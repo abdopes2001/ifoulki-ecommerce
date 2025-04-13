@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog - Ifoulki</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-800">
+  <main class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Our Blog</h1>
+    <div id="blogList" class="space-y-6"></div>
+  </main>
+
+  <script>
+    async function loadBlog() {
+      const res = await fetch('/api/blog');
+      const posts = await res.json();
+      const container = document.getElementById('blogList');
+      posts.forEach(post => {
+        const card = document.createElement('div');
+        card.className = "border p-4 rounded shadow";
+        card.innerHTML = `
+          <a href="blog-post.html?id=${post._id}">
+            <h2 class="text-xl font-bold">${post.title}</h2>
+            <p class="text-sm text-gray-600">${new Date(post.date).toLocaleDateString()}</p>
+            <img src="${post.image}" class="w-full mt-2 mb-2 rounded" />
+            <p>${post.content.substring(0, 150)}...</p>
+          </a>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    loadBlog();
+  </script>
+</body>
+</html>
