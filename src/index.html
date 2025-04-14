@@ -2,53 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IfoulkiCrafts - Handcrafted Treasures</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IfoulkiCrafts - Moroccan Handcrafts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <header>
-    <div class="logo">
-      <img src="assets/logo.png" alt="Ifoulki Logo"/>
-      <h1>IfoulkiCrafts</h1>
+<body class="bg-white text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold">IfoulkiCrafts</h1>
+      <nav class="space-x-6 text-sm">
+        <a href="index.html" class="hover:text-orange-600">Home</a>
+        <a href="products.html" class="hover:text-orange-600">Shop</a>
+        <a href="about.html" class="hover:text-orange-600">About</a>
+        <a href="contact.html" class="hover:text-orange-600">Contact</a>
+        <a href="faq.html" class="hover:text-orange-600">FAQ</a>
+        <a href="cart.html" class="hover:text-orange-600">Cart</a>
+      </nav>
     </div>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="products.html">Shop</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="cart.html">Cart</a></li>
-      </ul>
-    </nav>
   </header>
 
-  <section class="hero">
-    <img src="assets/images/banner.jpg" alt="Ifoulki Banner"/>
-    <div class="hero-text">
-      <h2>Discover Moroccan Handcrafts</h2>
-      <p>Carpets, Ceramics, Leather & More</p>
-      <a href="products.html" class="btn">Shop Now</a>
+  <!-- Hero -->
+  <section class="relative bg-cover bg-center h-[60vh]" style="background-image: url('banner.jpg');">
+    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+      <div class="text-center text-white">
+        <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Discover Moroccan Handcrafts</h2>
+        <p class="text-lg md:text-xl mb-6">Carpets, Ceramics, Leather & More</p>
+        <a href="products.html" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full">Shop Now</a>
+      </div>
     </div>
   </section>
 
-  <section class="featured-products">
-    <h2>Featured Products</h2>
-    <div class="product-grid" id="featured-products">
-      <!-- JS will inject products here -->
+  <!-- Featured Products -->
+  <section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <h3 class="text-3xl font-semibold text-center mb-10">Featured Products</h3>
+      <div class="grid gap-6 grid-cols-2 md:grid-cols-4">
+        <!-- Placeholder Cards -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg">
+          <img src="product1.jpg" class="w-full h-48 object-cover" alt="Product 1" />
+          <div class="p-4">
+            <h4 class="font-semibold">Handmade Ceramic</h4>
+            <p class="text-sm text-gray-600">$25.00</p>
+          </div>
+        </div>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg">
+          <img src="product2.jpg" class="w-full h-48 object-cover" alt="Product 2" />
+          <div class="p-4">
+            <h4 class="font-semibold">Berber Carpet</h4>
+            <p class="text-sm text-gray-600">$150.00</p>
+          </div>
+        </div>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg">
+          <img src="product3.jpg" class="w-full h-48 object-cover" alt="Product 3" />
+          <div class="p-4">
+            <h4 class="font-semibold">Leather Bag</h4>
+            <p class="text-sm text-gray-600">$60.00</p>
+          </div>
+        </div>
+        <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg">
+          <img src="product4.jpg" class="w-full h-48 object-cover" alt="Product 4" />
+          <div class="p-4">
+            <h4 class="font-semibold">Traditional Teapot</h4>
+            <p class="text-sm text-gray-600">$40.00</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <footer>
+  <!-- Footer -->
+  <footer class="bg-white border-t mt-12 py-6 text-sm text-center text-gray-600">
     <p>&copy; 2025 IfoulkiCrafts. All rights reserved.</p>
-    <div class="socials">
-      <a href="#">Instagram</a>
-      <a href="#">Facebook</a>
-      <a href="#">WhatsApp</a>
+    <div class="mt-2 space-x-4">
+      <a href="#" class="hover:underline">Instagram</a>
+      <a href="#" class="hover:underline">Facebook</a>
+      <a href="#" class="hover:underline">WhatsApp</a>
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <!-- Optional Admin Shortcut (hidden) -->
+  <a href="admin-dashboard.html" style="position:fixed;top:10px;right:10px;color:gray;text-decoration:none;font-size:12px;">Admin</a>
+
 </body>
 </html>
